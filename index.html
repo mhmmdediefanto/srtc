@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0f1420">
+  <meta name="description" content="Ada yang ingin kusampaikan.">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="id_ID">
+  <meta property="og:title" content="Untuk Rajma">
+  <meta property="og:description" content="Ada yang ingin kusampaikan.">
+  <title>Untuk Rajma</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='.9em' font-size='56'%3E🌙%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&amp;family=Lora:wght@400;500&amp;display=swap">
+  <style>
+    :root {
+      color-scheme: dark;
+      --night: #0f1420;
+      --night-soft: #1a2033;
+      --ink: #eee9e2;
+      --body-ink: #d3d0d0;
+      --muted: #a3a0ab;
+      --accent: #c3949b; /* Ubah warna aksen di sini. */
+      --accent-haze: color-mix(in srgb, var(--accent) 3%, transparent);
+      --accent-hover: color-mix(in srgb, var(--accent) 8%, transparent);
+      /* Kecepatan utama: perbesar durasi untuk gerakan lebih pelan. */
+      --opening-duration: 1.4s;
+      --envelope-duration: 6s;
+      --moon-duration: 6s;
+      --star-duration: 4s;
+      --cloud-duration: 52s;
+      --flight-duration: 3.8s;
+      --reveal-duration: 1.2s;
+      --paragraph-gap: 950ms;
+      --draw-duration: 1.6s;
+      --growth-duration: 3.8s;
+      --sway-duration: 8s;
+      --firefly-duration: 9s;
+      --ease: cubic-bezier(.22,.61,.36,1);
+    }
+    * { box-sizing: border-box; }
+    html { min-width: 0; background: var(--night); }
+    body {
+      margin: 0;
+      min-width: 0;
+      color: var(--body-ink);
+      background: radial-gradient(ellipse at 75% 0%, var(--accent-haze), transparent 52%),
+        linear-gradient(165deg, var(--night), var(--night-soft));
+      font-family: 'Lora', Georgia, serif;
+      font-size: 17px;
+      line-height: 1.85;
+      -webkit-font-smoothing: antialiased;
+    }
+    button { -webkit-tap-highlight-color: transparent; }
+    .invitation {
+      min-height: 100vh; min-height: 100svh; display: grid; place-items: center;
+      padding: 36px 24px; text-align: center;
+      opacity: 1; transition: opacity calc(var(--opening-duration) * .36) ease;
+    }
+    .invitation-inner { width: min(100%, 380px); }
+    .eyebrow { color: var(--accent); font: 10px/1.6 'Lora', Georgia, serif; letter-spacing: .27em; }
+    .invitation h1 { margin: 18px 0 9px; font-size: clamp(54px, 12vw, 72px); }
+    .invitation-description { margin: 0; color: var(--muted); font-size: 14px; }
+    .envelope { width: min(100%, 300px); margin: 26px auto 14px; overflow: visible; animation: envelope-float var(--envelope-duration) ease-in-out infinite; }
+    .is-opening .envelope { animation-play-state: paused; }
+    .envelope-flap { transform-origin: 160px 80px; }
+    .envelope-paper { transform-origin: center; }
+    .envelope-seal { transform-origin: 160px 130px; }
+    .open-letter {
+      display: inline-flex; justify-content: center; align-items: center; gap: 16px;
+      min-height: 48px; padding: 12px 28px; border: 1px solid var(--accent);
+      border-radius: 999px; background: var(--accent-hover); color: var(--ink);
+      font: 14px/1.5 'Lora', Georgia, serif; cursor: pointer;
+      transition: background-color .25s, transform .25s;
+    }
+    .open-letter svg { width: 17px; }
+    .open-letter:hover { background: color-mix(in srgb, var(--accent) 16%, transparent); transform: translateY(-2px); }
+    .open-letter:disabled { cursor: default; }
+    .open-letter:focus-visible, .music-toggle:focus-visible { outline: 2px solid var(--ink); outline-offset: 5px; }
+    .invitation-note { margin: 20px 0 0; color: var(--muted); font-size: 11px; }
+    .is-opening .envelope-flap { animation: open-flap calc(var(--opening-duration) * .6) var(--ease) forwards; }
+    .is-opening .envelope-paper { animation: lift-paper calc(var(--opening-duration) * .7) var(--ease) forwards; }
+    .is-opening .envelope-seal { animation: unseal calc(var(--opening-duration) * .25) ease forwards; }
+    .invitation.is-leaving { opacity: 0; }
+    .music-toggle {
+      position: fixed; right: max(16px, env(safe-area-inset-right)); bottom: max(16px, env(safe-area-inset-bottom));
+      z-index: 5; display: inline-flex; align-items: center; gap: 9px;
+      min-height: 44px; padding: 10px 15px; border: 1px solid var(--accent);
+      border-radius: 999px; background: var(--night); color: var(--body-ink);
+      font: 11px/1.5 'Lora', Georgia, serif; cursor: pointer;
+      box-shadow: 0 4px 20px color-mix(in srgb, var(--night) 50%, transparent);
+    }
+    .music-toggle svg { width: 15px; }
+    .music-toggle[aria-pressed="false"] .sound-wave { opacity: .25; }
+    .letter-entering { animation: letter-arrives var(--reveal-duration) var(--ease) both; }
+    @keyframes envelope-float { 0%,100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-8px) rotate(1deg); } }
+    @keyframes open-flap { to { transform: scaleY(-1); } }
+    @keyframes lift-paper { 35% { transform: translateY(0); } to { transform: translateY(-36px); } }
+    @keyframes unseal { to { opacity: 0; transform: scale(.8); } }
+    @keyframes letter-arrives { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    ::selection { background: var(--accent); color: var(--night); }
+    main { width: min(100%, 648px); margin-inline: auto; padding: 20px 28px 72px; }
+    svg { display: block; width: 100%; height: auto; overflow: hidden; }
+    .hero { margin: 0 -4px 14px; }
+    .sky { width: 100%; height: 270px; }
+    .star { opacity: .48; transform-box: fill-box; transform-origin: center; }
+    .cloud { opacity: .18; }
+    .moon-halo { opacity: .45; }
+    .plane, .trail { opacity: 0; }
+    article { position: relative; z-index: 1; }
+    h1 {
+      margin: 0 0 20px;
+      color: var(--ink);
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: clamp(52px, 9vw, 66px);
+      font-weight: 400;
+      line-height: 1.12;
+      letter-spacing: -.025em;
+    }
+    p { margin: 0 0 27px; overflow-wrap: break-word; }
+    .divider { width: 92px; margin: 34px auto 36px; color: var(--accent); opacity: .75; }
+    .draw-line { fill: none; stroke: currentColor; stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; }
+    .closing { margin-top: 32px; }
+    .signature { margin-top: 35px; text-align: center; }
+    .garden { width: 160px; margin: 0 auto 9px; color: var(--accent); }
+    .flower-sway { transform-origin: 80px 164px; }
+    .leaf, .petal { transform-box: fill-box; transform-origin: center bottom; }
+    .firefly { opacity: 0; fill: var(--ink); }
+    .sender { color: var(--muted); font-size: 13px; letter-spacing: .09em; }
+    .reply {
+      display: inline-flex; align-items: center; justify-content: center; gap: 14px;
+      min-width: 112px; min-height: 44px; margin-top: 27px; padding: 8px 21px;
+      border: 1px solid var(--accent); border-radius: 999px;
+      color: var(--ink); font: 14px/1.5 'Lora', Georgia, serif; text-decoration: none;
+      transition: background-color .25s, opacity var(--reveal-duration), transform var(--reveal-duration) var(--ease);
+    }
+    .reply svg { width: 16px; }
+    .reply:hover { background: var(--accent-hover); }
+    .reply:focus-visible { outline: 2px solid var(--ink); outline-offset: 5px; }
+    [hidden] { display: none !important; }
+    .motion-ready .reveal { opacity: 0; transform: translateY(14px); }
+    .motion-ready .reveal.is-visible { opacity: 1; transform: translateY(0); }
+    .reveal { transition: opacity var(--reveal-duration) var(--ease), transform var(--reveal-duration) var(--ease); }
+    .motion-ready .star { animation: twinkle var(--star-duration) ease-in-out infinite alternate; animation-delay: var(--delay, 0s); }
+    .motion-ready .moon-halo { animation: breathe var(--moon-duration) ease-in-out infinite; }
+    .motion-ready .cloud { animation: drift var(--cloud-duration) ease-in-out infinite alternate; }
+    .motion-ready .cloud.second { animation-duration: 46s; animation-delay: -20s; }
+    .motion-ready .cloud.third { animation-duration: 59s; animation-delay: -34s; }
+    .motion-ready .plane { animation: flight var(--flight-duration) linear infinite both; }
+    .motion-ready .trail { animation: trail var(--flight-duration) ease-out infinite both; }
+    /* Hanya efek menggambar memakai dashoffset; gerakan lain transform/opacity. */
+    .motion-ready .divider .draw-line, .motion-ready .stem { stroke-dasharray: 1; stroke-dashoffset: 1; }
+    .motion-ready .divider.is-visible .draw-line { animation: draw var(--draw-duration) var(--ease) forwards; }
+    .motion-ready .leaf, .motion-ready .petal { opacity: 0; transform: scale(.2); }
+    .motion-ready .grown .stem { animation: draw calc(var(--growth-duration) * .48) var(--ease) forwards; }
+    .motion-ready .grown .leaf, .motion-ready .grown .petal {
+      animation: unfold calc(var(--growth-duration) * .28) var(--ease) forwards;
+      animation-delay: calc(var(--growth-duration) * var(--at));
+    }
+    .motion-ready .grown .flower-sway { animation: sway var(--sway-duration) ease-in-out infinite; animation-delay: var(--growth-duration); }
+    .motion-ready .grown .firefly { animation: float var(--firefly-duration) ease-in-out infinite; animation-delay: calc(var(--growth-duration) + var(--wait)); }
+    .motion-ready .is-paused *, .tab-hidden *, .tab-hidden *::before { animation-play-state: paused !important; }
+    @keyframes breathe { 0%,100% { opacity: .3; transform: scale(.97); } 50% { opacity: .65; transform: scale(1.04); } }
+    @keyframes twinkle { from { opacity: .18; transform: scale(.85); } to { opacity: .72; transform: scale(1.08); } }
+    @keyframes drift { from { transform: translateX(-18px); } to { transform: translateX(24px); } }
+    @keyframes flight {
+      0% { opacity: 0; transform: translate(-45px, 215px) rotate(-20deg); }
+      8% { opacity: .85; }
+      25% { transform: translate(115px, 151px) rotate(-17deg); }
+      50% { transform: translate(275px, 115px) rotate(-4deg); }
+      72% { transform: translate(420px, 113px) rotate(5deg); opacity: .85; }
+      92% { opacity: .45; }
+      100% { opacity: 0; transform: translate(650px, 148px) rotate(9deg); }
+    }
+    @keyframes trail { 0%,15% { opacity: 0; } 45% { opacity: .18; } 100% { opacity: 0; } }
+    @keyframes draw { to { stroke-dashoffset: 0; } }
+    @keyframes unfold { to { opacity: 1; transform: scale(1); } }
+    @keyframes sway { 0%,100% { transform: rotate(-1.5deg); } 50% { transform: rotate(1.5deg); } }
+    @keyframes float {
+      0%,12%,72%,100% { opacity: 0; transform: translate(0,0); }
+      30% { opacity: .42; transform: translate(7px,-9px); }
+      52% { opacity: .2; transform: translate(-3px,-22px); }
+      71% { opacity: 0; transform: translate(5px,-31px); }
+    }
+    @media (min-width: 680px) {
+      main { padding-top: 46px; padding-bottom: 96px; }
+      .hero { margin-bottom: 28px; }
+      .sky { height: 290px; }
+      h1 { margin-bottom: 25px; }
+      body { font-size: 18px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      .motion-ready .reveal, .motion-ready .leaf, .motion-ready .petal { opacity: 1; transform: none; }
+      .motion-ready .draw-line, .motion-ready .stem { stroke-dashoffset: 0; }
+      .plane, .trail, .firefly { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <section class="invitation" id="invitation" aria-labelledby="invitation-title" hidden>
+    <div class="invitation-inner">
+      <div class="eyebrow">SEBUAH SURAT KECIL</div>
+      <h1 id="invitation-title">Untuk Rajma</h1>
+      <p class="invitation-description">Ada yang ingin kusampaikan.</p>
+      <svg class="envelope" viewBox="0 0 320 240" aria-hidden="true">
+        <g fill="none" stroke="var(--accent)" stroke-width="1" stroke-linecap="round" opacity=".5">
+          <path d="M49 47v8m-4-4h8m218-20v6m-3-3h6M282 175v6m-3-3h6"/>
+          <circle cx="30" cy="150" r="1"/><circle cx="253" cy="61" r="1"/>
+          <path d="M259 15a13 13 0 1 0 9 21 13 13 0 0 1-9-21Z"/>
+        </g>
+        <path d="M43 82 160 28 277 82v122H43Z" fill="var(--night-soft)" stroke="var(--accent)" stroke-width="1.1"/>
+        <g class="envelope-paper">
+          <rect x="60" y="65" width="200" height="128" rx="3" fill="var(--night-soft)" stroke="var(--accent)" stroke-opacity=".5"/>
+          <path d="M136 93h48m-70 16h92m-79 15h66" fill="none" stroke="var(--accent)" stroke-opacity=".4" stroke-linecap="round"/>
+        </g>
+        <path d="m43 82 117 73L277 82v122H43Z" fill="var(--night)" stroke="var(--accent)" stroke-width="1.1" stroke-linejoin="round"/>
+        <path d="m43 204 90-66m144 66-90-66" fill="none" stroke="var(--accent)" stroke-opacity=".6"/>
+        <path class="envelope-flap" d="M43 80h234l-117 76Z" fill="var(--night-soft)" stroke="var(--accent)" stroke-width="1.1" stroke-linejoin="round"/>
+        <g class="envelope-seal">
+          <circle cx="160" cy="139" r="15" fill="var(--night)" stroke="var(--accent)"/>
+          <path d="M164 131a8 8 0 1 0 4 13 8 8 0 0 1-4-13Z" fill="var(--accent)" fill-opacity=".7"/>
+        </g>
+      </svg>
+      <button class="open-letter" id="open-letter" type="button" aria-controls="letter">
+        Buka surat
+        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12m-5-5 5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <p class="invitation-note">Ada musik pelan yang menemani.</p>
+    </div>
+  </section>
+  <button class="music-toggle" id="music-toggle" type="button" aria-pressed="false" aria-label="Nyalakan musik" hidden>
+    <svg viewBox="0 0 20 20" aria-hidden="true">
+      <path d="M3 8h4l4-4v12l-4-4H3Z" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+      <path class="sound-wave" d="M14 7q3 3 0 6m2-9q6 6 0 12" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+    </svg>
+    <span id="music-label">Musik mati</span>
+  </button>
+  <main id="letter">
+    <div class="hero scene">
+      <svg class="sky" viewBox="0 0 600 270" aria-hidden="true">
+        <defs>
+          <radialGradient id="moon-light">
+            <stop stop-color="var(--accent)" stop-opacity=".22"/>
+            <stop offset="1" stop-color="var(--accent)" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <g style="transform-origin: 439px 84px" class="moon-halo"><circle cx="439" cy="84" r="78" fill="url(#moon-light)"/></g>
+        <path d="M451 54a32 32 0 1 0 18 52 32 32 0 0 1-18-52Z" fill="var(--accent)" fill-opacity=".12" stroke="var(--accent)" stroke-width="1.3"/>
+        <g fill="var(--ink)">
+          <circle class="star" cx="43" cy="85" r="1.2" style="--delay:-1s;--star-duration:4.2s"/>
+          <circle class="star" cx="89" cy="40" r="1" style="--delay:-3s;--star-duration:5.1s"/>
+          <circle class="star" cx="153" cy="110" r="1.4" style="--delay:-2s;--star-duration:3.7s"/>
+          <circle class="star" cx="211" cy="42" r="1" style="--delay:-.5s;--star-duration:4.9s"/>
+          <circle class="star" cx="271" cy="85" r="1.2" style="--delay:-4s;--star-duration:5.8s"/>
+          <circle class="star" cx="325" cy="29" r="1" style="--delay:-2.3s;--star-duration:3.5s"/>
+          <circle class="star" cx="381" cy="116" r="1" style="--delay:-1.7s;--star-duration:4.7s"/>
+          <circle class="star" cx="508" cy="35" r="1.1" style="--delay:-.4s;--star-duration:5.3s"/>
+          <circle class="star" cx="553" cy="104" r="1.4" style="--delay:-3.2s;--star-duration:4.4s"/>
+          <circle class="star" cx="582" cy="178" r=".9" style="--delay:-2.2s;--star-duration:5.9s"/>
+          <circle class="star" cx="489" cy="197" r="1" style="--delay:-1.2s;--star-duration:3.3s"/>
+          <circle class="star" cx="324" cy="209" r=".9" style="--delay:-3.7s;--star-duration:4.6s"/>
+          <circle class="star" cx="209" cy="178" r="1.1" style="--delay:-.8s;--star-duration:5.5s"/>
+          <circle class="star" cx="78" cy="208" r="1" style="--delay:-2.7s;--star-duration:3.8s"/>
+          <circle class="star" cx="17" cy="157" r=".8" style="--delay:-1.6s;--star-duration:5.2s"/>
+          <circle class="star" cx="365" cy="67" r=".8" style="--delay:-3.5s;--star-duration:4.1s"/>
+        </g>
+        <g fill="none" stroke="var(--ink)" stroke-linecap="round" stroke-width="1">
+          <path class="star" d="M115 71v8m-4-4h8" style="--delay:-2s;--star-duration:5.6s"/>
+          <path class="star" d="M239 126v6m-3-3h6" style="--delay:-3s;--star-duration:4.3s"/>
+          <path class="star" d="M347 153v8m-4-4h8" style="--delay:-1s;--star-duration:3.9s"/>
+          <path class="star" d="M526 151v6m-3-3h6" style="--delay:-4s;--star-duration:5.7s"/>
+          <path class="star" d="M174 225v6m-3-3h6" style="--delay:-1.5s;--star-duration:4.8s"/>
+          <path class="cloud" d="M62 150h37c3-12 17-14 25-6 8-19 35-14 37 6h31m-103 7h66"/>
+          <path class="cloud second" d="M352 177h35c5-9 14-10 20-5 8-17 29-13 32 5h34m-66 7h44"/>
+          <path class="cloud third" d="M240 66h21c3-8 12-10 18-4 6-13 24-12 28 4h20"/>
+        </g>
+        <path class="trail" d="M0 220Q230 84 432 119T600 143" fill="none" stroke="var(--accent)" stroke-width="1" stroke-dasharray="3 9"/>
+        <g class="plane" fill="var(--night)" stroke="var(--ink)" stroke-width="1.2" stroke-linejoin="round">
+          <path d="m0 0 37-11L13 15 10 4Z"/>
+          <path d="m10 4 27-15-24 19m0 0v7" fill="none"/>
+        </g>
+      </svg>
+    </div>
+
+    <article aria-label="Surat untuk Rajma">
+      <h1 class="reveal" id="greeting">Hai Rajma,</h1>
+      <p class="reveal paragraph">Hai Rajma, apa kabar? Baik kan?</p>
+      <p class="reveal paragraph">Sebenarnya aku sempat bingung, harus bilang ini atau nggak. Tapi aku pikir lebih baik jujur dari pada dipendem terus.</p>
+
+      <div class="divider scene">
+        <svg viewBox="0 0 100 36" aria-hidden="true">
+          <path class="draw-line" pathLength="1" d="M12 28Q48 25 84 8M34 23Q23 10 38 13Q45 16 45 20M48 19Q49 3 60 7Q64 11 56 16M62 15Q70 26 78 20Q81 14 72 12"/>
+        </svg>
+      </div>
+
+      <p class="reveal paragraph">Mungkin kamu sebenarnya sudah tahu kalau aku suka sama kamu. Ternyata sampai sekarang perasaan itu masih ada, susah raj wkwk. Tapi aku juga merasa, mungkin ada sesuatu dariku yang bikin kamu menjauh. Itu cuma firasatku aja sih, wkwk. Kalaupun iya, aku minta maaf ya.</p>
+      <p class="reveal paragraph">Aku nggak berharap kamu merasakan hal yang sama, karena itu sepenuhnya hak kamu. Aku cuma nggak mau terus memendamnya, dan ingin kamu tahu apa adanya. Aku menghargai apa pun tanggapanmu nanti. Jadi, santai aja, nggak perlu merasa terbebani.</p>
+
+      <div class="divider scene">
+        <svg viewBox="0 0 100 26" aria-hidden="true">
+          <path class="draw-line" pathLength="1" d="M7 15Q24 10 38 13M62 13Q77 16 93 11M50 8v10m-5-5h10"/>
+        </svg>
+      </div>
+
+      <p class="reveal paragraph">Tapi kalau suatu saat kamu ingin datang, kapan pun itu, aku akan selalu menunggu.</p>
+      <p class="reveal paragraph closing">Makasih ya udah baca sampai habis. Take care, Rajma.</p>
+    </article>
+
+    <footer class="signature">
+      <div class="garden scene">
+        <svg viewBox="0 0 160 182" aria-hidden="true">
+          <g class="flower-sway" fill="none" stroke="currentColor" stroke-width="1.15" stroke-linecap="round" stroke-linejoin="round">
+            <path class="stem" pathLength="1" d="M80 164C75 139 84 122 80 100S78 72 81 62"/>
+            <path class="leaf" style="--at:.22" d="M80 140C60 142 51 131 49 118C65 119 76 126 80 140Zm-23-14 23 14"/>
+            <path class="leaf" style="--at:.34" d="M80 121C96 121 107 108 108 95C92 96 82 106 80 121Zm20-18-20 18"/>
+            <path class="leaf" style="--at:.42" d="M80 100C67 99 61 91 61 81C73 84 79 90 80 100"/>
+            <path class="petal" style="--at:.48" d="M81 66C66 62 59 52 65 44C72 39 80 49 81 66Z"/>
+            <path class="petal" style="--at:.56" d="M81 66C92 65 105 55 99 46C94 39 82 48 81 66Z"/>
+            <path class="petal" style="--at:.64" d="M81 63C72 55 69 36 80 31C92 34 91 52 81 63Z"/>
+            <path class="petal" style="--at:.72" d="M68 62Q80 78 94 61M75 67Q81 72 87 67"/>
+          </g>
+          <circle class="firefly" cx="40" cy="96" r="1.3" style="--wait:0s"/>
+          <circle class="firefly" cx="117" cy="70" r="1" style="--wait:3s"/>
+          <circle class="firefly" cx="104" cy="140" r=".9" style="--wait:6s"/>
+          <path d="M60 169Q80 172 100 169" fill="none" stroke="currentColor" stroke-opacity=".25" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <!-- Ganti [NAMA PENGIRIM] di bawah dengan namamu. -->
+      <div class="sender reveal">— [Anam Mauludin]</div>
+      <a class="reply reveal" id="reply" hidden target="_blank" rel="noopener noreferrer">
+        Balas
+        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12m-5-5 5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+    </footer>
+  </main>
+
+  <script>
+    // NOMOR WHATSAPP: isi kode negara tanpa +, spasi, atau 0 di depan.
+    // Contoh: '6281234567890'. Biarkan '' untuk menyembunyikan tombol Balas.
+    const WHATSAPP_NUMBER = '6285714606107';
+
+    (() => {
+      'use strict';
+      const root = document.documentElement;
+      const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+      const greeting = document.getElementById('greeting');
+      const paragraphs = [...document.querySelectorAll('.paragraph')];
+      const garden = document.querySelector('.garden');
+      const sender = document.querySelector('.sender');
+      const reply = document.getElementById('reply');
+      const number = WHATSAPP_NUMBER.trim();
+      const hasNumber = /^[1-9]\d{7,14}$/.test(number);
+      if (hasNumber) {
+        reply.href = 'https://wa.me/' + number;
+        reply.hidden = false;
+      }
+      function startLetter() {
+        // Tanpa IntersectionObserver, surat langsung terbaca setelah dibuka.
+        if (!('IntersectionObserver' in window)) return;
+        let flightDone = false;
+        let flowerDone = false;
+        let gardenInView = false;
+        let timer = null;
+        let nextAt = 0;
+        let remaining = 0;
+        const seen = new Set();
+        const candidates = new Set();
+        const styles = getComputedStyle(root);
+        const milliseconds = value => value.trim().endsWith('ms') ? parseFloat(value) : parseFloat(value) * 1000;
+        const gap = milliseconds(styles.getPropertyValue('--paragraph-gap'));
+
+        function showReply() {
+          if (flowerDone && seen.size === paragraphs.length) {
+            sender.classList.add('is-visible');
+            if (hasNumber) reply.classList.add('is-visible');
+          }
+        }
+        function grow() {
+          // Bunga mulai sesudah paragraf penutup terbaca dan berada di layar.
+          if (gardenInView && seen.size === paragraphs.length && !garden.classList.contains('grown')) {
+            garden.classList.add('grown');
+            if (motion.matches) { flowerDone = true; showReply(); }
+          }
+        }
+        function schedule(delay = gap) {
+          if (timer !== null || !flightDone || document.hidden || motion.matches) return;
+          if (!paragraphs.some(p => candidates.has(p) && !seen.has(p))) return;
+          nextAt = performance.now() + delay;
+          timer = window.setTimeout(() => {
+            timer = null;
+            const next = paragraphs.find(p => candidates.has(p) && !seen.has(p));
+            if (next) { next.classList.add('is-visible'); seen.add(next); }
+            grow(); showReply(); schedule();
+          }, delay);
+        }
+        function finishFlight() {
+          if (flightDone) return;
+          flightDone = true;
+          greeting.classList.add('is-visible');
+          schedule(gap);
+        }
+        function showAll() {
+          clearTimeout(timer); timer = null;
+          flightDone = flowerDone = true;
+          document.querySelectorAll('.reveal, .divider').forEach(el => el.classList.add('is-visible'));
+          paragraphs.forEach(p => seen.add(p));
+          garden.classList.add('grown');
+          showReply();
+        }
+        const scenes = new IntersectionObserver(entries => {
+          entries.forEach(entry => {
+            entry.target.classList.toggle('is-paused', !entry.isIntersecting);
+            // Scroll melewati hero tidak boleh menahan seluruh pesan.
+            if (entry.target.classList.contains('hero') && !entry.isIntersecting) finishFlight();
+            if (entry.target === garden) { gardenInView = entry.isIntersecting; grow(); }
+            if (entry.target.classList.contains('divider') && entry.isIntersecting) entry.target.classList.add('is-visible');
+          });
+        }, { threshold: 0, rootMargin: '30px' });
+        const reader = new IntersectionObserver(entries => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) candidates.add(entry.target);
+            else candidates.delete(entry.target);
+          });
+          schedule();
+        }, { threshold: 0, rootMargin: '0px 0px -12px 0px' });
+        document.querySelector('.plane').addEventListener('animationiteration', event => {
+          // Sapaan muncul sesudah lintasan pertama; pesawat terus mengulang.
+          if (event.animationName === 'flight') finishFlight();
+        });
+        garden.addEventListener('animationend', event => {
+          // Kelopak terakhir menandai akhir pertumbuhan (sekitar 3,8 detik).
+          if (event.animationName === 'unfold' && event.target.style.getPropertyValue('--at') === '.72') {
+            flowerDone = true; showReply();
+          }
+        });
+        document.addEventListener('visibilitychange', () => {
+          root.classList.toggle('tab-hidden', document.hidden);
+          if (document.hidden && timer !== null) {
+            remaining = Math.max(0, nextAt - performance.now());
+            clearTimeout(timer); timer = null;
+          } else if (!document.hidden) { schedule(remaining || gap); remaining = 0; }
+        });
+        motion.addEventListener('change', event => { if (event.matches) showAll(); });
+        document.querySelectorAll('.scene').forEach(el => scenes.observe(el));
+        paragraphs.forEach(el => reader.observe(el));
+        root.classList.toggle('tab-hidden', document.hidden);
+        if (motion.matches) showAll();
+        else root.classList.add('motion-ready');
+      }
+
+      // Musik instrumental buatan Web Audio: tetap satu HTML, tanpa MP3/CDN.
+      // Ubah volume (0–1) dan tempo di bawah bila ingin lebih pelan.
+      const MUSIC_VOLUME = 0.95;
+      const MUSIC_BPM = 52;
+      const AudioEngine = window.AudioContext || window.webkitAudioContext;
+      const musicButton = document.getElementById('music-toggle');
+      const musicLabel = document.getElementById('music-label');
+      let audio = null;
+      let master = null;
+      let musicEnabled = false;
+      let musicTimer = null;
+      let audioRevision = 0;
+      let beat = 0;
+      let nextNote = 0;
+      const secondsPerBeat = 60 / MUSIC_BPM;
+      // Progresi dan melodi orisinal yang berulang perlahan, tanpa vokal.
+      const chords = [[53,57,60,64], [50,53,57,60], [45,52,55,60], [48,52,55,62]];
+      const melody = [[69,72,76,72], [69,65,64,60], [64,67,72,71], [67,64,62,60],
+        [69,72,74,72], [69,65,64,65], [67,71,72,76], [74,71,67,64]];
+
+      function updateMusicButton() {
+        musicButton.setAttribute('aria-pressed', String(musicEnabled));
+        musicButton.setAttribute('aria-label', musicEnabled ? 'Matikan musik' : 'Nyalakan musik');
+        musicLabel.textContent = musicEnabled ? 'Musik aktif' : 'Musik mati';
+      }
+      function createAudio() {
+        audio = new AudioEngine();
+        master = audio.createGain();
+        master.gain.value = 0;
+        master.connect(audio.destination);
+        // Gema pendek untuk ruang yang hangat; volume pantulan sangat rendah.
+        const echo = audio.createDelay(1);
+        const feedback = audio.createGain();
+        const wet = audio.createGain();
+        echo.delayTime.value = .32; feedback.gain.value = .16; wet.gain.value = .14;
+        echo.connect(feedback); feedback.connect(echo); echo.connect(wet); wet.connect(master);
+        return echo;
+      }
+      let echo = null;
+      function note(midi, time, volume, length = 3.6) {
+        const envelope = audio.createGain();
+        envelope.gain.setValueAtTime(0, time);
+        envelope.gain.linearRampToValueAtTime(volume, time + .025);
+        envelope.gain.exponentialRampToValueAtTime(.0001, time + length);
+        envelope.connect(master); envelope.connect(echo);
+        let ended = 0;
+        [1, 2, 3].forEach((harmonic, index) => {
+          const tone = audio.createOscillator();
+          const partial = audio.createGain();
+          tone.type = 'sine';
+          tone.frequency.value = 440 * Math.pow(2, (midi - 69) / 12) * harmonic;
+          partial.gain.value = [1, .18, .035][index];
+          tone.connect(partial); partial.connect(envelope);
+          tone.onended = () => {
+            tone.disconnect(); partial.disconnect();
+            if (++ended === 3) envelope.disconnect();
+          };
+          tone.start(time); tone.stop(time + length + .05);
+        });
+      }
+      function queueMusic() {
+        if (!musicEnabled || document.hidden || audio.state !== 'running') return;
+        while (nextNote < audio.currentTime + .2) {
+          const bar = Math.floor(beat / 4);
+          const step = beat % 4;
+          const chord = chords[bar % chords.length];
+          note(melody[bar % melody.length][step], nextNote, .095);
+          note(chord[step], nextNote + .08, .045, 4.2);
+          if (step === 0) note(chord[0] - 12, nextNote, .055, 4.5);
+          beat++; nextNote += secondsPerBeat;
+        }
+        musicTimer = window.setTimeout(queueMusic, 120);
+      }
+      async function syncMusic() {
+        const revision = ++audioRevision;
+        clearTimeout(musicTimer); musicTimer = null;
+        if (!audio) return;
+        try {
+          if (!musicEnabled || document.hidden) {
+            await audio.suspend();
+            return;
+          }
+          // Dipanggil pertama kali langsung dari klik agar diizinkan browser HP.
+          await audio.resume();
+          if (revision !== audioRevision || !musicEnabled || document.hidden) return;
+          master.gain.setTargetAtTime(MUSIC_VOLUME, audio.currentTime, .45);
+          nextNote = audio.currentTime + .08;
+          queueMusic();
+        } catch {
+          if (revision !== audioRevision) return;
+          musicEnabled = false;
+          updateMusicButton();
+        }
+      }
+      function toggleMusic() {
+        if (!AudioEngine) return;
+        try {
+          if (!audio) echo = createAudio();
+          musicEnabled = !musicEnabled;
+          updateMusicButton();
+          void syncMusic();
+        } catch {
+          musicEnabled = false;
+          updateMusicButton();
+        }
+      }
+      musicButton.addEventListener('click', toggleMusic);
+      document.addEventListener('visibilitychange', () => {
+        root.classList.toggle('tab-hidden', document.hidden);
+        void syncMusic();
+      });
+
+      const invitation = document.getElementById('invitation');
+      const letter = document.getElementById('letter');
+      const openButton = document.getElementById('open-letter');
+      const openingDuration = millisecondsForOpening();
+      let opened = false;
+      let openingFinished = false;
+      let openingTimer;
+      function millisecondsForOpening() {
+        const value = getComputedStyle(root).getPropertyValue('--opening-duration').trim();
+        return value.endsWith('ms') ? parseFloat(value) : parseFloat(value) * 1000;
+      }
+      function revealLetter() {
+        if (openingFinished) return;
+        openingFinished = true;
+        clearTimeout(openingTimer);
+        invitation.hidden = true;
+        letter.hidden = false;
+        letter.classList.add('letter-entering');
+        window.scrollTo(0, 0);
+        startLetter();
+        // Pindahkan fokus ke surat untuk pembaca layar dan navigasi keyboard.
+        greeting.setAttribute('tabindex', '-1');
+        greeting.focus({ preventScroll: true });
+      }
+      openButton.addEventListener('click', () => {
+        if (opened) return;
+        opened = true;
+        openButton.disabled = true;
+        if (AudioEngine) { musicButton.hidden = false; toggleMusic(); }
+        invitation.classList.add('is-opening');
+        if (motion.matches) revealLetter();
+        else {
+          openingTimer = window.setTimeout(() => {
+            invitation.classList.add('is-leaving');
+            openingTimer = window.setTimeout(revealLetter, openingDuration * .36);
+          }, openingDuration * .75);
+        }
+      });
+      motion.addEventListener('change', event => {
+        if (event.matches && opened && !openingFinished) revealLetter();
+      });
+      // Tanpa JavaScript, surat tetap terbaca; sampul hanya diaktifkan lewat skrip.
+      letter.hidden = true;
+      invitation.hidden = false;
+      root.classList.toggle('tab-hidden', document.hidden);
+    })();
+  </script>
+</body>
+</html>
